@@ -1,0 +1,60 @@
+ import java.util.*;
+   
+   public class AnagramSolver {
+      private List dictionary;
+      private Map anagramDictionary;
+    
+    
+      public AnagramSolver(List list) {
+         dictionary = list;
+     
+         anagramDictionary = new HashMap();
+          List newWords = new ArrayList();
+          for(String word: dictionary) {
+             LetterInventory newValue = new LetterInventory(word);
+               anagramDictionary.put(word, newValue);
+               newWords.add(word);
+         }
+      }
+     private List findAnagram (LetterInventory lettersList) {
+          List tempCombos = new ArrayList();
+          for (String word: dictionary){
+              if(lettersList.subtract(anagramDictionary.get(word)) != null) {
+                 tempCombos.add(word);
+              }
+           }
+         return tempCombos;
+      }
+      
+      
+      
+        public void print (String s, int max) {
+          if (max < 0){
+             throw new IllegalArgumentException();
+          }
+           LetterInventory lettersList = new LetterInventory(s);
+         List combinations = findAnagram(lettersList);
+           Stack stack = new Stack();
+           
+     	   // Begin the Back track Recursion Loop:
+           makeAnagrams(stack, lettersList, combinations, max);
+          
+       }
+       
+       private void makeAnagrams(Stack stack, LetterInventory lettersList,
+                                List combinations, int max) {
+          if (lettersList.isEmpty()) {
+                System.out.println(stack);
+             } else if (stack.size() < max || max == 0) {
+                for (String word : combinations) {
+                   LetterInventory newlettersList = lettersList.subtract(anagramDictionary.get(word));
+                   if (newlettersList != null) {
+                      stack.add(word);
+                      makeAnagrams(stack, newlettersList, combinations, max);
+                      stack.remove(stack.size() - 1);
+                   }
+                }
+             }
+          }
+    
+    }

@@ -1,0 +1,166 @@
+//Jasmine Kennedy
+//cse 143
+//TA: I Miao
+//this program allows a client to play a game of assassin where 
+//every person has a specific target to kill, and once killed a new 
+//target who was your old target's target is assigned until only 1 
+//person in the game is alive
+import java.util.*;
+public class AssassinManager{
+   private AssassinNode killRing;
+   private AssassinNode grave;
+   
+   /**
+   @param list of names to put together in kill ring
+   * builds list of names as long as there is atleast one name
+   * and builds a kill ring with the same amount of spots as names
+   @IllegalArgumentException if the list of names is 0, must enter
+   * list of names larger than 0 to not throw exception
+   **/
+   public AssassinManager(List<String> names){
+      if(names.size() == 0){
+         throw new IllegalArgumentException();
+      }
+      if(names.size() == 0){
+         throw new IllegalArgumentException();
+      }
+      killRing =  new AssassinNode(names.get(0));
+      AssassinNode current = killRing;
+      for(int i = 1; i < names.size(); i++){
+         AssassinNode assassin = new AssassinNode(names.get(i));
+         while(current.next != null){
+            current = current.next;
+         }
+         current.next = assassin;
+      }
+   }
+   
+   /**
+   * prints who is in the kill ring currently and who their prey is
+   */
+   public void printKillRing(){
+      if(killRing != null){
+         AssassinNode current = killRing.next;
+         AssassinNode prev = killRing;
+         
+         while(current != null){
+            System.out.println("    " + prev.name + " is stalking"
+            + " " + current.name);
+            prev = prev.next;
+            current = current.next;
+         }
+         System.out.println("    " + prev.name + " is stalking" +
+         " " + killRing.name);
+      }
+   }
+   
+   /**
+   * prints the person who was killed and who killed them
+   */
+   public void printGraveyard(){
+      AssassinNode current = grave;
+      while(current != null){
+         System.out.println("    " + current.name + " was killed"
+         + " by " + current.killer);
+         current = current.next;
+      }
+   }
+   
+   /**
+   * checks if the name inputed matches one in the killRing or grave not, regardless of casing
+   * @param name of who the next person to be killed is
+   * @param if the name is being looked for in the killRing or grave
+   * @return true if the name is found, false if not
+   */
+   private boolean contains(String name, AssassinNode current){
+      while(current != null){
+         if(current.name.equalsIgnoreCase(name)){
+            return true;
+         }
+         current = current.next;
+      }
+      return false;
+   }
+   
+   /**
+   * checks if the name (regardless of casing)inputed matches one in the killRing or not, regardless of casing
+   * @param name which is used to match to a name in killRing
+   * @return true if the name is found, false if not
+   */
+   public boolean killRingContains(String name){
+      AssassinNode current = killRing;
+      return contains(name, current);
+   }
+   
+   /**
+   * checks if the inputed name (regardless of casing)is in the graveyard or not
+   * @param name so user can check if a specific person is dead
+   * @return true if the name is, false if not
+   */
+   public boolean graveyardContains(String name){
+      AssassinNode current = grave;
+      return contains(name, current);
+   }
+   
+   /**
+   * checks if the game is over by checking if there is only one person left in killRing
+   * @return true if there is one person left and false if not
+   */
+   public boolean gameOver(){
+      return (killRing.next == null);
+   }
+   
+   /**
+   * if there is only one person left in killring they win
+   * if the game is not over, null is returned
+   * @return the name of the last person in the killring
+   */
+   public String winner(){
+      if(killRing.next != null){
+         return null;
+      }
+      return killRing.name;
+   }
+   
+   /**
+   * user inputs a name of person to kill if correct they are killed
+   * moves people from kill ring to grave yard if they are killed
+   * @param name the user passes in the name of who will be killed regardless of casing
+   * @exception  IllegalArgumentException if the name is not part of the current killring
+   * @exception  IllegalStateException if the game is over
+   */
+   public void kill(String name){
+      if(!killRingContains(name)){
+         throw new IllegalArgumentException();
+      }
+      if(gameOver()){
+         throw new IllegalStateException();
+      }
+      AssassinNode temp = killRing;
+      //front case
+      if(killRing.name.equalsIgnoreCase(name)){
+         killRing = killRing.next;
+         temp.next = grave;
+         grave = temp;
+         AssassinNode newTemp = killRing;
+         while(newTemp.next != null){
+            newTemp = newTemp.next;
+         }
+         temp.killer = newTemp.name;
+         
+         
+      } else{
+         while( temp.next != null && !temp.next.name.equalsIgnoreCase(name)){
+            temp = temp.next;
+         }
+         AssassinNode killed = temp.next;
+         temp.next = temp.next.next;
+         killed.next = null;
+         killed.next = grave;
+         grave = killed;
+         killed.killer = temp.name;
+      }
+      
+      
+   }
+}

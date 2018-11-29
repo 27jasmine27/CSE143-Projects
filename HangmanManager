@@ -1,0 +1,164 @@
+//Jasmine Kennedy
+//TA: I Miao
+//This allows a client to guess the letters in an unknown word (of a length chosen by the user)
+//in a set amount of guesses (that is also chosen by the user)
+import java.util.*;
+public class HangmanManager {
+	//number of guesses initially chosen by user
+	private int numGuess;
+	//string of the word (of chosen length), with correct guesses displayed and others as dashes (-)
+	private String dashPattern;
+	//length of the word the user wants to guess
+	private int wordLength;
+	//current words being considered by evil Hangman
+	private Set<String> currentWords;
+	//all of the letters guessed by the user (correct and incorrect)
+	private SortedSet <Character> lettersGuessed;
+	//checks to see if the current group of words is empty (true), or not (false)
+	private boolean isEmpty;
+	
+	/**
+	* uses list of dictionary words of given length, number of guesses total, target word length
+	* to start the game. Deletes duplicates of words
+	* deletes duplicates
+	* @param collection of words from the dictionary
+	* @param a number representing the length
+	* @param a number representing the max amount of guesses
+	* @exception IllegalArgumentException if length of the word < 1 or if there are no mroe guesses
+	*/
+	public HangmanManager (Collection <String> dictionary,
+	int length, int max) {
+		if (length < 1 || max < 0) {
+			throw new IllegalArgumentException();
+		}
+		numGuess = max;
+		wordLength = length;
+		dashPattern = "-";
+		lettersGuessed = new TreeSet <Character>();
+		currentWords = new TreeSet <String>();
+		for (int i = 1; i < length; i++) {
+			dashPattern += " " + "-";
+		}
+		for (String word: dictionary) {
+			if (word.length() == length) {
+				currentWords.add(word);
+			}
+		}
+	}
+	
+	/*
+	* client can ask for the set of words being considered by hangman
+	* @return the group of words left
+	*/
+	public Set<String> words() {
+		return currentWords;
+	}
+	
+	/*
+	* client can ask how many guesses they have left in the game
+	* @return an integer representing the number of guesses left
+	*/
+	public int guessesLeft() {
+		return numGuess;
+	}
+	
+	/*
+	* returns the letters already guessed by the user
+	* @return set of letters guessed by the user
+	*/
+	public Set <Character> guesses() {
+		return lettersGuessed;
+	}
+	
+	/*
+	* returns the current pattern for hangman with the correct
+	* guesses as letters being shown (- o o -) or - - - - if no correct guesses
+	* @return a string of the dashes with correct guesses for user
+	* @exception illegalState if the set of words is empty
+	*/
+	public String pattern() {
+		if (currentWords.isEmpty()) {
+			throw new IllegalStateException();
+		}
+		return dashPattern;
+	}
+	
+	/*
+	* user guesses a letter, the number of occurences of that letter is shown,
+	* and the amount of guesses left changes (-1 if wrong, -0 if correct)
+	* @param the letter guessed by the user
+	* @return the number of how many times this letter occurs
+	* @exception IllegalStateException if there are no more guesses or words
+	* @exception IllegalArgumentException if using previous guess or is nonempty
+	*/
+	public int record(char guess) {
+		if (numGuess < 1 || isEmpty) {
+			throw new IllegalStateException();
+		}
+		if (lettersGuessed.contains(guess)) {
+			throw new IllegalArgumentException();
+		}
+		lettersGuessed.add(guess);
+		Map<String, Set<String>> words = new TreeMap<String, Set<String>>();
+		int occurences = 0;
+		for (String word: currentWords) {
+			createNewPatterns(words, word, guess);
+		}
+		pickBestPattern(words);
+		currentWords = words.get(dashPattern);
+		
+		for (int i = 0; i < dashPattern.length(); i++) {
+			if (dashPattern.charAt(i) == guess) {
+				occurences++;
+			}
+		}
+		if (occurences == 0) {
+			numGuess--;
+		}
+		return occurences;
+	}
+	
+	/*
+	* uses the letter guessed by the user, and the current word to create a pattern of dashes
+	* @param map of the words and their corresponding pattern, and keeping track of new guesses
+	* @param String word, used to go through the current word
+	* @param char (letter) guessed by the user
+	* @return the number of how many times this letter occurs
+	*
+	*/
+	private void createNewPatterns(Map<String, Set<String>> words, String word, char guess) {
+		String newWord = "";
+		for (int i = 0; i < word.length(); i++) {
+			if (lettersGuessed.contains(word.charAt(i))) {
+				newWord+= word.charAt(i) + " ";
+			} else if (word.charAt(i) == guess) {
+				newWord+= guess + " ";
+			} else {
+				newWord += "- ";
+			}
+		}
+		if (!words.containsKey(newWord)) {
+			words.put(newWord, new TreeSet<String>());
+		}
+		words.get(newWord).add(word);
+		dashPattern = newWord;
+	}
+	
+	/*
+	* goes through every pattern and picks the longest one to choose the group of words
+	* that have the most letters not guessed (chooses words with ---e- over -e-e-)
+	* @param a map of words and their patterns, needed to correctly
+	*/
+	private void pickBestPattern(Map<String, Set<String>> words) {
+		int longest = 0;
+		String tempPattern = "";
+		for (String allPatterns: words.keySet()) {
+			if (words.get(allPatterns).size() > longest) {
+				tempPattern = allPatterns;
+				longest = words.get(allPatterns).size();
+			}
+		}
+		currentWords = words.get(tempPattern);
+		dashPattern = tempPattern;
+	}
+}

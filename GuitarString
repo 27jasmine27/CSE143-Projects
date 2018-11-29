@@ -1,0 +1,76 @@
+//Jasmine
+//cse 143
+//TA: I Mei
+//This program that models a guitar string when it is being played &
+//allows user to input various elements that affect the ring buffer
+import java.util.*;
+public class GuitarString{
+   public static final double DECAY_FACTOR = 0.996;
+   private Queue<Double> ringBuffer;
+   
+   /**
+   * creates new ring buffer with with desired capacity (user's input
+   * is used in calculation), fills with zeros (to replace later)
+   * @param frequency: decimal used to create new guitar string
+   * @exception if frequency calculation is less than 2 or if
+   * frequency is less than zero then it will not be created
+   */
+   public GuitarString(double frequency){
+      int capacity = (int)Math.round((StdAudio.SAMPLE_RATE / frequency));
+      if(capacity < 2 || frequency <= 0){
+         throw new IllegalArgumentException();
+      } else{
+         ringBuffer = new LinkedList<Double>();
+         for(int i = 0; i < capacity; i++){
+            ringBuffer.add(0.0);
+         }
+       }
+   }
+   
+   /**
+   * creates guitar string and sets all of it's ring buffer spaces to
+   * the group of decimals passed in by the user
+   * @param init is the values that will be put into ringBuffer
+   * @exception if there are less than 2 numbers passed in
+   */
+   public GuitarString(double[] init){
+      int capacity = init.length;
+      if(capacity < 2){
+         throw new IllegalArgumentException();
+      }
+      ringBuffer = new LinkedList<Double>();
+      for(int i = 0; i < capacity; i++){
+         ringBuffer.add(init[i]);
+      }
+   }
+   
+   /**
+   * replaces every number in the ring buffer with a random number
+   * that is between -0.5- 0.5
+   */
+   public void pluck(){
+      for(int i = 0; i < ringBuffer.size(); i++){
+         ringBuffer.add(Math.random() - 0.5);
+         ringBuffer.remove();
+      }
+   }
+   
+   /**
+   * increases one step and takes the previous sample, and at the end
+   * of the ring buffer adds the average of the previous and next sample
+   */
+   public void tic() {
+      double front = ringBuffer.remove();
+      double next = ringBuffer.peek();
+      ringBuffer.add(DECAY_FACTOR * ((front + next) / 2));
+      
+   }
+   
+   /**
+   * outputs what is at the front of the ring buffer without deleting it
+   * @return decimal representing what value the front of ring buffer
+   */
+   public double sample(){
+      return this.ringBuffer.peek();
+   }
+}

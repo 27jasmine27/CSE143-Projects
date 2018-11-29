@@ -1,0 +1,142 @@
+//Jasmine Kennedy
+//CSE 143
+//TA: I Mei
+//this Program keeps track of how many instances of a letter appear in a length
+//of given words and can find the size, if it is empty, can clear the words,
+// can make the words visible to the user, and can add or subtract words from
+//the entirety of the group
+import java.util.*;
+public class LetterInventory {
+	//array of integers called letters will hold the count of each letter
+	private int[] letters;
+	//the size of the entire inventory, which is the sum of all of the counts
+	private int size;
+   //is this a class constant
+  public static final int DEFAULT_SIZE = 26;
+   
+	/**
+	* takes in a string, and counts the amount of each letter, regardless of 
+	* casing, and updates a letter inventory that stores the counts of each letter
+	* @param data is the collection of characters who's instances get counted
+	*/
+	public LetterInventory(String data){
+      //originally set to 26 and it worked but is not using a class constant
+		letters = new int[DEFAULT_SIZE];
+		String lowCase = data.toLowerCase();
+      System.out.println("Lowcase = " + lowCase);
+		for(int i = 0; i < lowCase.length(); i++){
+			if(Character.isLetter(lowCase.charAt(i))){
+				int location = lowCase.charAt(i) - 'a';
+				letters[location]++;
+				size++;
+			}
+		}
+	}
+	
+	/**
+	* returns the size of the entire inventory, which represents
+	* the sum of the counts of each letter
+	* @return an integer which is the size of the inventory
+	*/
+	public int size(){
+		return size;
+	}
+	
+	/**
+	* checks if the inventory is empty or not
+	* @return true if there are no values (empty if size is 0)
+	*  and false if there are values (size is not zero)
+	*/
+	public boolean isEmpty(){
+		return size == 0;
+	}
+	
+	/**
+	* a letter is passed in, and a the number of times it appears gets returned
+	* @param letter is passed in to determine what character to find the count
+	* @return is an integer representing how many instances of that
+	* character there are
+	*  @exception if a non alphabetical character is passed in
+	*/
+	public int get(char letter){
+      if(!Character.isLetter(letter)){
+		   throw new IllegalArgumentException();
+		}  
+      char lowerCase = Character.toLowerCase(letter);
+      System.out.println("lowercase is " + lowerCase);
+      int location = lowerCase - 'a';
+      System.out.println("letter is: " + lowerCase);
+      return letters[location];   
+	}
+	
+	/**
+	* returns a string version of inventory in brackets, where the amount of
+	* instances of a letter translate into how many times it is printed
+	* @return String form so that the user can see each lower case letter
+	* in the console
+	*/
+	public String toString(){
+		String repeats = "[";
+		for(int i = 0; i < letters.length; i++){
+			char eachLetter = (char) ('a' + i);
+			for(int j = 0; j < letters[i]; j++){
+				repeats += eachLetter;
+			}
+		}
+		repeats += "]";
+		return repeats;
+	}
+	
+	/**
+	* takes in a letter & integer, replacing the old count with that integer
+	* @param letter is the letter the user would like to change the count of
+	* @param value is the integer the old count will get replaced by
+	* @exception illegalargument is thrown if a non alphabetical character or
+	* negative number are passed in
+	*/
+	public void set(char letter, int value){
+		char lowerCase = Character.toLowerCase(letter);
+		if(lowerCase >= 'a' && lowerCase <= 'z' && value >=0){
+			int oldVal = letters[lowerCase - 'a'];
+			letters[lowerCase -'a'] = value;
+			size = (size - oldVal) + value;
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+	
+	/**
+	* takes the counts of two letterInventory's and returns a new one with
+	* the sum of those counts--> 4 'a' + 2 'a' = 6 'a'
+	* @param other is the letterInventory that will be added to the previous
+	* @return a new letterInventory that has combined values of the given 2
+	*/
+	public LetterInventory add(LetterInventory other){
+		LetterInventory sum = new LetterInventory("");
+		for(int i = 0; i < other.letters.length; i++){
+			sum.letters[i] = letters[i] + other.letters[i];
+		}
+		sum.size += this.size + other.size;
+		return sum;
+	}
+	
+	/**
+	* subtracts the value of two different inventories and if that value is
+	* positive, puts it in the new inventory at that location. if negative,
+	* a 0 is put in at that value
+	* @param other is the inventory used to subtract from the given inventory
+	* @return is a letterInventory that stores the new values of each letter,
+	*/
+	public LetterInventory subtract(LetterInventory other){
+		LetterInventory subtract = new LetterInventory("");
+		for(int i = 0; i < other.letters.length; i++){
+			subtract.letters[i] = letters[i] - other.letters[i];
+			if(subtract.letters[i] < 0){
+				return null;
+			}
+			subtract.size += subtract.letters[i];
+		}
+		return subtract;
+		
+	}
+}
